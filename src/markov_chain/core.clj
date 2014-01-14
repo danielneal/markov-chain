@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]))
 
 (defn map-vals
+  "Map vals (taken from medley library)"
   [f coll]
   (persistent! (reduce-kv #(assoc! %1 %2 (f %3))
                           (transient (empty coll))
@@ -12,7 +13,10 @@
 (def bohemian
   (slurp "resources/bohemian.txt"))
 
-(defn transform-source [source]
+(defn transform-source
+  "Transforms a source text into a map of 2-word prefixes
+  to a map of suffixes with their probabilites"
+  [source]
   (map-vals (fn [vals]
               (let [suff (map second vals)
                     freq (doall (frequencies suff))
@@ -26,11 +30,13 @@
                                       (->> (str/split source #"[\s]")
                                            (map str/lower-case)))))))
 
-(transform-source bohemian)
-(defn choose-word [probabilities]
+(defn choose-word
+  "Pick a random suffix from a map of suffixes to probabilities, according
+  to the their probability distribution"
+  [suffixes]
   "Draw following the given probability distribution"
   (let [r (rand)]
-    (loop [[current & remaining] (into [] probabilities)
+    (loop [[current & remaining] (into [] suffixes)
            upper-bound (current 1)]
       (let [[subsequent & _] remaining
             suffix (current 0)]
@@ -38,20 +44,20 @@
         suffix
         (recur remaining (+ upper-bound (subsequent 1))))))))
 
-(def source alice)
-(def source bohemian)
 
-(let [input-prefix "i'm just"
-      source (transform-source source)
-      max-n 30]
-  (loop [g (vec (str/split input-prefix #"[\s]"))
-         n 0]
-    (let [last-2 (str (last (pop g)) " " (last g))
-          next-word (try (choose-word (get source last-2))
-                      (catch Exception e nil))]
-      (if (or (> n max-n) (nil? next-word))
-        (apply str (interpose " " g))
-        (recur (conj g next-word) (inc n))))))
+(defn markov [source seed max-n]
+  (let [source (transform-source source)]
+    (loop [g (vec (str/split seed #"[\s]"))
+           n 0]
+      (let [last-2 (str (last (pop g)) " " (last g))
+            next-word (try (choose-word (get source last-2))
+                        (catch Exception e nil))]
+        (if (or (> n max-n) (nil? next-word))
+          (apply str (interpose " " g))
+          (recur (conj g next-word) (inc n)))))))
+
+;; usage
+(markov alice "it was" 40)
 
 
 
