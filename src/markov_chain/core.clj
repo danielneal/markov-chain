@@ -56,8 +56,6 @@
           (apply str (interpose " " g))
           (recur (conj g next-word) (inc n)))))))
 
-;; usage
-(markov alice "it was" 40)
 
 
 

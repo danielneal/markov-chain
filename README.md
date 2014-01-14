@@ -7,8 +7,15 @@ implemented at the West London Hack Night by Oliver, Dan and Luke.
 
 ## Usage
 
-Specify the source, a two-word seed (that must exist in the source)
-and then run the function
+Run the function `markov`, specifying the source text, a two-word seed
+(that must exist in the source), and a maximum number of words to return.
+
+Example: to generate 40 words, starting with "it was" using Alice in Wonderland
+as a source, do the following:
+
+    (markov alice "it was" 40)
+
+
 
 ## License
 
